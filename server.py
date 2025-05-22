@@ -12,7 +12,10 @@ app = FastAPI()
 # Add this block before your routes
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],  # or ["*"] for all origins (not recommended for production)
+    allow_origins=[
+        "https://fadeaway-frontend.vercel.app",  # your deployed frontend
+        "http://localhost:8080",                 # for local dev (optional)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
