@@ -1,4 +1,5 @@
 flask
+fastapi
 pillow
 uvicorn
-python-multipart
+python-multipartvicor
