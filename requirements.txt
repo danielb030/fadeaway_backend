@@ -2,4 +2,4 @@ flask
 fastapi
 pillow
 uvicorn
-python-multipartvicor
+python-multipart
