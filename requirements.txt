@@ -3,3 +3,4 @@ fastapi
 pillow
 uvicorn
 python-multipart
+requests
