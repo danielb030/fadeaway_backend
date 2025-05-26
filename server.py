@@ -153,6 +153,6 @@ async def download_model(request: Request):
 
     return FileResponse(file_path, media_type="application/octet-stream", filename=filename)
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000)) # 로컬 개발자용 기본 포트 8000
-    uvicorn.run("server:app", host="0.0.0.0", port=port)
+# if __name__ == "__main__":
+#     port = int(os.environ.get("PORT", 8000)) # Default port is 8000
+#     uvicorn.run("server:app", host="0.0.0.0", port=port)
