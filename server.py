@@ -2,8 +2,9 @@ from fastapi import FastAPI, File, UploadFile, Request
 from fastapi.responses import FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from rembg import remove
-
 from PIL import Image
+
+import uvicorn
 import os
 import base64
 import io
@@ -151,3 +152,7 @@ async def download_model(request: Request):
         f.write(response.content)
 
     return FileResponse(file_path, media_type="application/octet-stream", filename=filename)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000)) # 로컬 개발자용 기본 포트 8000
+    uvicorn.run("server:app", host="0.0.0.0", port=port)
