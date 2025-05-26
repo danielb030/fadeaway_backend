@@ -1,14 +1,15 @@
 from fastapi import FastAPI, File, UploadFile, Request
 from fastapi.responses import FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
+from rembg import remove
 
 from PIL import Image
 import os
 import base64
 import io
 import requests
-import time
-import zipfile
+import numpy as np
+import cv2
 
 app = FastAPI()
 mesh_api_key = "msy_qOnp1jEDQ39zjTCLIjqGfvBrZuAFCHbo3Hec"
@@ -34,8 +35,58 @@ headers = {
     "Authorization": f"Bearer {YOUR_API_KEY}"
 }
 
-@app.post("/upload/")
+def detect_and_crop_head_from_array(cv_image, factor=1.7):
+    # Load the pre-trained face detection model from OpenCV
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+    # Convert the image to grayscale for face detection
+    gray_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+
+    # Detect faces in the image
+    faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.3, minNeighbors=5)
+
+    if len(faces) > 0:
+        x, y, w, h = faces[0]
+        center_x = x + w // 2
+        center_y = y + h // 2
+        size = int(max(w, h) * factor)
+        x_new = max(0, center_x - size // 2)
+        y_new = max(0, center_y - size // 2)
+        cropped_head = cv_image[y_new:y_new+size, x_new:x_new+size]
+        return cropped_head
+    else:
+        return None
+    
+@app.post("/process-image/")
 async def process_images(request: Request):
+    data = await request.json()
+    image_b64 = data.get("image")
+    if not image_b64:
+        return {"error": "No image data provided"}
+
+    # Decode base64 image
+    input_data = base64.b64decode(image_b64.split(",")[-1])
+    # Process image (simulate your remove function)
+    # output_data = remove(image_data)  # Uncomment if you have a remove() function
+    output_data = remove(input_data)  # Replace with actual processing
+
+    # Convert result to OpenCV format
+    image = Image.open(io.BytesIO(output_data)).convert("RGBA")
+    open_cv_image = np.array(image)
+    head = cv2.cvtColor(open_cv_image, cv2.COLOR_RGBA2BGRA)
+
+    cropped_head = detect_and_crop_head_from_array(head)
+    if cropped_head is None:
+        return {"error": "No faces detected in the input image."}
+
+    # Save processed image
+    output_path = os.path.join("uploads", "processed_image.png")
+    cv2.imwrite(output_path, cropped_head)
+
+    return FileResponse(output_path, media_type="image/png", filename="processed_image.png")
+
+@app.post("/upload/")
+async def upload_images(request: Request):
     data = await request.json()
     imageUrls = data.get("imageUrls", [])
 
@@ -63,7 +114,7 @@ async def process_images(request: Request):
 
 
 @app.post("/progress/")
-async def process_model(request: Request):
+async def show_progress(request: Request):
     data = await request.json()
     task_id = data.get("task_id")
 

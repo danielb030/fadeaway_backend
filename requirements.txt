@@ -4,3 +4,7 @@ pillow
 uvicorn
 python-multipart
 requests
+opencv-python
+rembg
+onnxruntime
+# uvicorn server:app --host 0.0.0.0 --ip 8000
