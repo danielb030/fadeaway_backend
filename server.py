@@ -44,7 +44,7 @@ def detect_and_crop_head_from_array(cv_image, factor=1.7):
     gray_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
     # Detect faces in the image
-    faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.3, minNeighbors=5)
+    faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.3, minNeighbors=10)
 
     if len(faces) > 0:
         x, y, w, h = faces[0]
@@ -56,7 +56,7 @@ def detect_and_crop_head_from_array(cv_image, factor=1.7):
         cropped_head = cv_image[y_new:y_new+size, x_new:x_new+size]
         return cropped_head
     else:
-        return None
+        return cv_image
     
 @app.post("/process-image/")
 async def process_images(request: Request):
@@ -153,6 +153,10 @@ async def download_model(request: Request):
 
     return FileResponse(file_path, media_type="application/octet-stream", filename=filename)
 
-# if __name__ == "__main__":
-#     port = int(os.environ.get("PORT", 8000)) # Default port is 8000
-#     uvicorn.run("server:app", host="0.0.0.0", port=port)
+@app.get("/")
+def root():
+    return {"message": "It works!"}
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))  # Render needs this!
+    uvicorn.run("server:app", host="0.0.0.0", port=port)
